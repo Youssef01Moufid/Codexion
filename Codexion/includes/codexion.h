@@ -1,6 +1,7 @@
 #ifndef CODEXION_H
 #define CODEXION_H
 
+#include <pthread.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -14,6 +15,18 @@ typedef enum s_scheduler
     FIFO,
     EDF
 }    t_scheduler;
+
+typedef struct s_dongles
+{
+    int id;
+    int available;
+    long available_at;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    t_pqueue queue;
+    t_sim *sime;
+
+}   t_dongles;
 
 typedef struct s_sim
 {
