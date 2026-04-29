@@ -40,9 +40,39 @@ void    pq_push(t_pqueue *pq, int coder_id, long priority)
 t_waiter    pq_pop(t_pqueue *pq)
 {
     t_waiter    result;
+    t_waiter    tmp;
+    int         i;
+    int         smallest;
+    int         left;
+    int         right;
 
     result = pq->data[0];
     pq->data[0] = pq->data[pq->size - 1];
     pq->size -= 1;
     
+    i = 0;
+    while (1)
+    {
+        left = 2 * i + 1;
+        right = 2 * i + 2;
+        smallest = i;
+        
+        if (left < pq->size && pq->data[left].priority < pq->data[smallest].priority)
+            smallest = left;
+        if (right < pq->size && pq->data[right].priority < pq->data[smallest].priority)
+            smallest = right;
+        if (smallest == i)
+            break;
+        tmp = pq->data[i];
+        pq->data[i] = pq->data[smallest];
+        pq->data[smallest] = tmp;
+        i = smallest;
+    }
+    return (result);
+}
+void    pq_free(t_pqueue *pq)
+{
+    free(pq->data);
+    pq->data = NULL;
+    pq->size = 0;
 }
