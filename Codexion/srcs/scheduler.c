@@ -76,3 +76,7 @@ void    pq_free(t_pqueue *pq)
     pq->data = NULL;
     pq->size = 0;
 }
+t_waiter    pq_peek(t_pqueue *pq)
+{
+    return (pq->data[0]);
+}

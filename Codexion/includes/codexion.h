@@ -82,4 +82,11 @@ long    get_time_ms(void);
 bool    init_sim(t_sim *sim);
 void    cleanup(t_sim *sim);
 void    log_state(t_sim *sim, int coder_id, char *mssg);
+bool    pq_init(t_pqueue *pq, int capacity);
+void    pq_push(t_pqueue *pq, int coder_id, long priority);
+t_waiter    pq_pop(t_pqueue *pq);
+void    pq_free(t_pqueue *pq);
+t_waiter    pq_peek(t_pqueue *pq);
+void    dongle_request(t_dongle *dongle, t_coder *coder);
+void    dongle_release(t_dongle *dongle);
 #endif // CODEXION_H
