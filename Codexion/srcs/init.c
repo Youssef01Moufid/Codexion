@@ -55,7 +55,7 @@ bool    init_coders(t_sim *sim)
     {
         sim->coders[i].id = i + 1;
         sim->coders[i].compile_count = 0;
-        sim->coders[i].last_compile_start = 0;
+        sim->coders[i].last_compile_start = get_time_ms();
         sim->coders[i].sim = sim;
         sim->coders[i].left_dongle = &sim->dongles[i];
         sim->coders[i].right_dongle = &sim->dongles[(i + 1) % N];

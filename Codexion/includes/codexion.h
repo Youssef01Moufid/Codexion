@@ -89,4 +89,6 @@ void    pq_free(t_pqueue *pq);
 t_waiter    pq_peek(t_pqueue *pq);
 void    dongle_request(t_dongle *dongle, t_coder *coder);
 void    dongle_release(t_dongle *dongle);
+void    *monitor_routine(void *arg);
+void    *coder_routine(void *arg);
 #endif // CODEXION_H

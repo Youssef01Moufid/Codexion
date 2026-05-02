@@ -1,18 +1,28 @@
-#include "includes/codexion.h"
+#include "../includes/codexion.h"
 
 int main(int argc, char **argv)
 {
-    t_sim sim;
+    t_sim   sim;
+    int         i;
 
-    if (!parsing(argc, argv, &sim))
-        return 1;
-
-    printf("number of coders : %d\n", sim.number_of_coders);
-    printf("time to burnout : %d\n", sim.time_to_burnout);
-    printf("time to compile : %d\n", sim.time_to_compile);
-    printf("time to debug : %d\n", sim.time_to_debug);
-    printf("time to refactor : %d\n", sim.time_to_refactor);
-    printf("number of compiles required : %d\n", sim.number_of_compiles_required);
-    printf("dongle cooldown : %d\n", sim.dongle_cooldown);
-    printf("scheduler : %s\n", sim.scheduler == FIFO ? "fifo" : "edf");
+    i = 0;
+    if(!parsing(argc, argv, &sim))
+        return (1);
+    if (!init_sim(&sim))
+        return (1);
+    pthread_create(&sim.monitor, NULL, &monitor_routine, &sim);
+    while (i < sim.number_of_coders)
+    {
+        pthread_create(&sim.coders[i].thread, NULL, coder_routine, &sim.coders[i]);
+        i++;
+    }
+    pthread_join(sim.monitor, NULL);
+    i = 0;
+    while (i < sim.number_of_coders)
+    {
+        pthread_join(sim.coders[i].thread, NULL);
+        i++;
+    }
+    cleanup(&sim);
+    return (0);
 }
