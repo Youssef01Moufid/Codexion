@@ -1,55 +1,76 @@
 #include "../includes/codexion.h"
 
-int is_stopped(t_sim *sim)
+static int	acquire_two(t_coder *c)
 {
-    int check;
-    pthread_mutex_lock(&sim->stop_mutex);
-    check = sim->sim_stopped;
-    pthread_mutex_unlock(&sim->stop_mutex);
-    return (check);
-}
-void    *coder_routine(void *arg)
-{
-    t_coder *coder;
+	t_dongle	*a;
+	t_dongle	*b;
+	int			a_is_left;
+	int			b_is_left;
 
-    coder = (t_coder *)arg;
-    while (1)
-    {
-        if (coder->id % 2)
-        {
-            dongle_request(coder->left_dongle, coder);
-            if (is_stopped(coder->sim))
-                return (NULL);
-            dongle_request(coder->right_dongle, coder);
-            if (is_stopped(coder->sim))
-                return (NULL);
-        }
-        else
-        {
-        dongle_request(coder->right_dongle, coder);
-            if (is_stopped(coder->sim))
-                return (NULL);
-        dongle_request(coder->left_dongle, coder);
-            if (is_stopped(coder->sim))
-                return (NULL);
-        }
-        pthread_mutex_lock(&coder->sim->stop_mutex);
-        coder->last_compile_start = get_time_ms();
-        pthread_mutex_unlock(&coder->sim->stop_mutex);
-        log_state(coder->sim, coder->id, "is compiling");
-        usleep(coder->sim->time_to_compile * 1000);
-        pthread_mutex_lock(&coder->sim->stop_mutex);
-        coder->compile_count++;
-        pthread_mutex_unlock(&coder->sim->stop_mutex);
-        dongle_release(coder->left_dongle);
-        dongle_release(coder->right_dongle);
-        if (is_stopped(coder->sim))
-            return (NULL);
-        log_state(coder->sim, coder->id, "is debugging");
-        usleep(coder->sim->time_to_debug * 1000);
-        if (is_stopped(coder->sim))
-            return (NULL);
-        log_state(coder->sim, coder->id, "is refactoring");
-        usleep(coder->sim->time_to_refactor * 1000);
-    }
+	a = c->left_dongle;
+	b = c->right_dongle;
+	a_is_left = 1;
+	b_is_left = 0;
+	if (a->id > b->id)
+	{
+		t_dongle	*tmp = a;
+		int			t = a_is_left;
+
+		a = b;
+		b = tmp;
+		a_is_left = b_is_left;
+		b_is_left = t;
+	}
+	while (!is_stopped(c->sim))
+	{
+		dongle_request(a, c, a_is_left);
+		if (is_stopped(c->sim))
+			return (0);
+		if (dongle_request_until(b, c, b_is_left, 20))
+			return (1);
+		dongle_release(a);
+		usleep(200);
+	}
+	return (0);
+}
+
+void	*coder_routine(void *arg)
+{
+	t_coder	*c;
+
+	c = (t_coder *)arg;
+	if (c->sim->number_of_coders == 1)
+	{
+		while (!is_stopped(c->sim))
+			usleep(1000);
+		return (NULL);
+	}
+	while (!is_stopped(c->sim))
+	{
+		if (!acquire_two(c))
+			return (NULL);
+
+		pthread_mutex_lock(&c->sim->stop_mutex);
+		c->last_compile_start = get_time_ms();
+		pthread_mutex_unlock(&c->sim->stop_mutex);
+
+		log_state(c->sim, c->id, "has taken a dongle");
+		log_state(c->sim, c->id, "has taken a dongle");
+		log_state(c->sim, c->id, "is compiling");
+		precise_sleep(c->sim->time_to_compile);
+
+		pthread_mutex_lock(&c->sim->stop_mutex);
+		c->compile_count++;
+		pthread_mutex_unlock(&c->sim->stop_mutex);
+
+		dongle_release(c->left_dongle);
+		dongle_release(c->right_dongle);
+
+		log_state(c->sim, c->id, "is debugging");
+		precise_sleep(c->sim->time_to_debug);
+
+		log_state(c->sim, c->id, "is refactoring");
+		precise_sleep(c->sim->time_to_refactor);
+	}
+	return (NULL);
 }

@@ -1,82 +1,110 @@
 #include "../includes/codexion.h"
 
-bool    pq_init(t_pqueue *pq, int capacity)
+static int	less(t_waiter a, t_waiter b)
 {
-    pq->data = malloc(capacity * sizeof(t_waiter));
-    if (!pq->data)
-    {
-        fprintf(stderr, "Error in allocation data of queue");
-        return (false);
-    }
-    pq->capacity = capacity;
-    pq->size = 0;
-    return (true);
+	if (a.key != b.key)
+		return (a.key < b.key);
+	if (a.seq != b.seq)
+		return (a.seq < b.seq);
+	return (a.coder_id < b.coder_id);
 }
-void    pq_push(t_pqueue *pq, int coder_id, long priority)
-{
-    int i;
-    int parent;
-    t_waiter    tmp;
 
-    pq->data[pq->size].coder_id = coder_id;
-    pq->data[pq->size].priority = priority;
-    pq->size += 1;
-    
-    i = pq->size - 1;
-    while (i > 0)
-    {
-        parent = (i - 1) / 2;
-        if (pq->data[i].priority < pq->data[parent].priority)
-        {
-            tmp = pq->data[i];
-            pq->data[i] = pq->data[parent];
-            pq->data[parent] = tmp;
-            i = parent;
-        }
-        else
-            return;
-    }
-}
-t_waiter    pq_pop(t_pqueue *pq)
+static void	swap(t_waiter *a, t_waiter *b)
 {
-    t_waiter    result;
-    t_waiter    tmp;
-    int         i;
-    int         smallest;
-    int         left;
-    int         right;
+	t_waiter	t;
 
-    result = pq->data[0];
-    pq->data[0] = pq->data[pq->size - 1];
-    pq->size -= 1;
-    
-    i = 0;
-    while (1)
-    {
-        left = 2 * i + 1;
-        right = 2 * i + 2;
-        smallest = i;
-        
-        if (left < pq->size && pq->data[left].priority < pq->data[smallest].priority)
-            smallest = left;
-        if (right < pq->size && pq->data[right].priority < pq->data[smallest].priority)
-            smallest = right;
-        if (smallest == i)
-            break;
-        tmp = pq->data[i];
-        pq->data[i] = pq->data[smallest];
-        pq->data[smallest] = tmp;
-        i = smallest;
-    }
-    return (result);
+	t = *a;
+	*a = *b;
+	*b = t;
 }
-void    pq_free(t_pqueue *pq)
+
+bool	pq_init(t_pqueue *pq, int capacity)
 {
-    free(pq->data);
-    pq->data = NULL;
-    pq->size = 0;
+	pq->data = malloc(capacity * sizeof(t_waiter));
+	if (!pq->data)
+		return (fprintf(stderr, "Error: malloc pqueue\n"), false);
+	pq->size = 0;
+	pq->capacity = capacity;
+	return (true);
 }
-t_waiter    pq_peek(t_pqueue *pq)
+
+void	pq_push(t_pqueue *pq, t_waiter w)
 {
-    return (pq->data[0]);
+	int	i;
+	int	parent;
+
+	if (pq->size >= pq->capacity)
+		return ;
+	pq->data[pq->size] = w;
+	i = pq->size;
+	pq->size++;
+	while (i > 0)
+	{
+		parent = (i - 1) / 2;
+		if (less(pq->data[i], pq->data[parent]))
+		{
+			swap(&pq->data[i], &pq->data[parent]);
+			i = parent;
+		}
+		else
+			break ;
+	}
+}
+
+t_waiter	pq_pop(t_pqueue *pq)
+{
+	t_waiter	res;
+	int			i;
+
+	res = pq->data[0];
+	pq->data[0] = pq->data[pq->size - 1];
+	pq->size--;
+	i = 0;
+	while (1)
+	{
+		int	l = 2 * i + 1;
+		int	r = 2 * i + 2;
+		int	s = i;
+
+		if (l < pq->size && less(pq->data[l], pq->data[s]))
+			s = l;
+		if (r < pq->size && less(pq->data[r], pq->data[s]))
+			s = r;
+		if (s == i)
+			break ;
+		swap(&pq->data[i], &pq->data[s]);
+		i = s;
+	}
+	return (res);
+}
+
+t_waiter	pq_peek(t_pqueue *pq)
+{
+	return (pq->data[0]);
+}
+
+void	pq_free(t_pqueue *pq)
+{
+	free(pq->data);
+	pq->data = NULL;
+	pq->size = 0;
+	pq->capacity = 0;
+}
+
+void	pq_drop_invalid_top(t_pqueue *pq, t_dongle *d)
+{
+	while (pq->size > 0)
+	{
+		t_waiter	top = pq->data[0];
+		t_coder		*c = &d->sim->coders[top.coder_id - 1];
+		int			current_gen;
+
+		if (d == c->left_dongle)
+			current_gen = c->gen_left;
+		else
+			current_gen = c->gen_right;
+		if (top.gen == current_gen)
+			return ;
+		(void)pq_pop(pq);
+	}
 }

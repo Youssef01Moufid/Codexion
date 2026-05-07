@@ -1,32 +1,31 @@
 #include "../includes/codexion.h"
 
-long    get_time_ms(void)
+long	get_time_ms(void)
 {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
-void    cleanup(t_sim *sim)
+
+void	precise_sleep(long ms)
 {
-    int i;
-    int N;
+	long	start;
+	long	now;
+	long	remaining;
 
-    pthread_mutex_destroy(&sim->print_mutex);
-    pthread_mutex_destroy(&sim->stop_mutex);
-    if (sim->coders)
-        free(sim->coders);
-    i = 0;
-    N = sim->number_of_coders;
-    if (sim->dongles)
-    {
-        while (i < N)
-        {
-            pthread_mutex_destroy(&sim->dongles[i].mutex);
-            pthread_cond_destroy(&sim->dongles[i].cond);
-            pq_free(&sim->dongles[i].queue);
-            i++;
-        }
-        free(sim->dongles);
-    }
-
+	if (ms <= 0)
+		return ;
+	start = get_time_ms();
+	while (1)
+	{
+		now = get_time_ms();
+		remaining = ms - (now - start);
+		if (remaining <= 0)
+			break ;
+		if (remaining > 2)
+			usleep((remaining - 1) * 1000);
+		else
+			usleep(200);
+	}
 }
