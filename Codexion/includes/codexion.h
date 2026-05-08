@@ -18,14 +18,6 @@ typedef enum e_scheduler
 	EDF
 }	t_scheduler;
 
-/*
-** Queue element (per dongle).
-** FIFO: key = seq (strict arrival order)
-** EDF:  key = deadline (last_compile_start + time_to_burnout)
-** Tie-break: seq, then coder_id to be deterministic.
-**
-** gen is used to invalidate stale/canceled requests without O(n) removal.
-*/
 typedef struct s_waiter
 {
 	int		coder_id;

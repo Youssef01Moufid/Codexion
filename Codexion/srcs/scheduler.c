@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   scheduler.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ymoufid <ymoufid@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/08 00:29:07 by ymoufid           #+#    #+#             */
+/*   Updated: 2026/05/08 00:55:51 by ymoufid          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/codexion.h"
 
 static int	less(t_waiter a, t_waiter b)
@@ -54,7 +66,7 @@ void	pq_push(t_pqueue *pq, t_waiter w)
 t_waiter	pq_pop(t_pqueue *pq)
 {
 	t_waiter	res;
-	int			i;
+	int			(i), (l), (r), (s);
 
 	res = pq->data[0];
 	pq->data[0] = pq->data[pq->size - 1];
@@ -62,9 +74,9 @@ t_waiter	pq_pop(t_pqueue *pq)
 	i = 0;
 	while (1)
 	{
-		int	l = 2 * i + 1;
-		int	r = 2 * i + 2;
-		int	s = i;
+		l = 2 * i + 1;
+		r = 2 * i + 2;
+		s = i;
 
 		if (l < pq->size && less(pq->data[l], pq->data[s]))
 			s = l;
@@ -93,10 +105,13 @@ void	pq_free(t_pqueue *pq)
 
 void	pq_drop_invalid_top(t_pqueue *pq, t_dongle *d)
 {
+	t_waiter	top;
+	t_coder		*c;
+
 	while (pq->size > 0)
 	{
-		t_waiter	top = pq->data[0];
-		t_coder		*c = &d->sim->coders[top.coder_id - 1];
+		top = pq->data[0];
+		c = &d->sim->coders[top.coder_id - 1];
 		int			current_gen;
 
 		if (d == c->left_dongle)
