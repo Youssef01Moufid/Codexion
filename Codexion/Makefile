@@ -1,13 +1,12 @@
 NAME = codexion
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread
-
-SRC_DIR = srcs
+CFLAGS = -Wall -Wextra -Werror -pthread 
 INC_DIR = includes
+SRC_DIR = srcs
 
 SRCS = \
-	$(SRC_DIR)/main.c \
+	$(SRC_DIR)/main.c\
 	$(SRC_DIR)/parsing.c \
 	$(SRC_DIR)/init.c \
 	$(SRC_DIR)/utils.c \

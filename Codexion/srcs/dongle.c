@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   dongle.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ymoufid <ymoufid@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/09 03:00:39 by ymoufid           #+#    #+#             */
+/*   Updated: 2026/05/15 21:24:49 by ymoufid          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/codexion.h"
 #include <time.h>
 
@@ -80,7 +92,6 @@ static int	can_take_now(t_dongle *d, t_coder *c)
 	return (1);
 }
 
-/* returns 1 if acquired, 0 if timeout/stop */
 int	dongle_request_until(t_dongle *d, t_coder *c, int is_left, long wait_ms)
 {
 	t_waiter		w;
@@ -88,18 +99,14 @@ int	dongle_request_until(t_dongle *d, t_coder *c, int is_left, long wait_ms)
 	struct timespec	ts;
 
 	gen = gen_ptr(c, is_left);
-
 	pthread_mutex_lock(&d->mutex);
-
 	(*gen)++;
 	w.coder_id = c->id;
 	w.gen = *gen;
 	w.seq = d->next_seq++;
 	w.key = compute_key(d, c, w.seq);
-
 	pq_push(&d->queue, w);
 	pthread_cond_broadcast(&d->cond);
-
 	abs_timespec_from_now_ms(wait_ms, &ts);
 	while (!can_take_now(d, c))
 	{
@@ -118,7 +125,6 @@ int	dongle_request_until(t_dongle *d, t_coder *c, int is_left, long wait_ms)
 			return (0);
 		}
 	}
-
 	d->available = 0;
 	(void)pq_pop(&d->queue);
 	pthread_mutex_unlock(&d->mutex);

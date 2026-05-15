@@ -79,24 +79,19 @@ typedef struct s_sim
 	long				start_time;
 }	t_sim;
 
-/* parsing/init/cleanup */
 bool	parsing(int argc, char **argv, t_sim *sim);
 bool	init_sim(t_sim *sim);
 void	cleanup(t_sim *sim);
 
-/* time/sleep */
 long	get_time_ms(void);
 void	precise_sleep(long ms);
 
-/* stop */
 int		is_stopped(t_sim *sim);
 void	stop_sim(t_sim *sim);
 
-/* log */
 void	log_state(t_sim *sim, int coder_id, const char *msg);
 void	log_burnout(t_sim *sim, int coder_id);
 
-/* heap / priority queue */
 bool		pq_init(t_pqueue *pq, int capacity);
 void		pq_push(t_pqueue *pq, t_waiter w);
 t_waiter	pq_pop(t_pqueue *pq);
@@ -104,12 +99,10 @@ t_waiter	pq_peek(t_pqueue *pq);
 void		pq_free(t_pqueue *pq);
 void		pq_drop_invalid_top(t_pqueue *pq, t_dongle *d);
 
-/* dongles */
 void    dongle_request(t_dongle *dongle, t_coder *coder, int is_left);
 int     dongle_request_until(t_dongle *dongle, t_coder *coder, int is_left, long until_ms);
 void    dongle_release(t_dongle *dongle);
 
-/* routines */
 void	*monitor_routine(void *arg);
 void	*coder_routine(void *arg);
 

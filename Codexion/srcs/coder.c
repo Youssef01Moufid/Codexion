@@ -1,11 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   coder.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ymoufid <ymoufid@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/10 22:11:33 by ymoufid           #+#    #+#             */
+/*   Updated: 2026/05/10 22:11:35 by ymoufid          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/codexion.h"
 
 static int	acquire_two(t_coder *c)
 {
 	t_dongle	*a;
 	t_dongle	*b;
+	t_dongle	*tmp;
 	int			a_is_left;
 	int			b_is_left;
+	int			t;
 
 	a = c->left_dongle;
 	b = c->right_dongle;
@@ -13,8 +27,8 @@ static int	acquire_two(t_coder *c)
 	b_is_left = 0;
 	if (a->id > b->id)
 	{
-		t_dongle	*tmp = a;
-		int			t = a_is_left;
+		tmp = a;
+		t = a_is_left;
 
 		a = b;
 		b = tmp;

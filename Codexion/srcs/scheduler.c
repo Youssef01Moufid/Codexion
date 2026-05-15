@@ -6,7 +6,7 @@
 /*   By: ymoufid <ymoufid@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/08 00:29:07 by ymoufid           #+#    #+#             */
-/*   Updated: 2026/05/08 00:55:51 by ymoufid          ###   ########.fr       */
+/*   Updated: 2026/05/08 23:06:40 by ymoufid          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,13 +107,12 @@ void	pq_drop_invalid_top(t_pqueue *pq, t_dongle *d)
 {
 	t_waiter	top;
 	t_coder		*c;
+	int			current_gen;
 
 	while (pq->size > 0)
 	{
 		top = pq->data[0];
 		c = &d->sim->coders[top.coder_id - 1];
-		int			current_gen;
-
 		if (d == c->left_dongle)
 			current_gen = c->gen_left;
 		else
